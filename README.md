@@ -1,14 +1,14 @@
 # Sensor Externo LHC Campinas
 
 Firmware/tutorial para ESP32-WROVER ou ESP32 DevKit V1 com DHT11 no pino
-`D5/GPIO5`. O sensor publica temperatura, umidade e sensação térmica no
+`D4/GPIO4`. O sensor publica temperatura, umidade e sensação térmica no
 Arandu como `iot-sensor-externo-lhc-001`.
 
 ## Hardware
 
 - ESP32-WROVER/DevKit V1, 4 MB flash.
 - Conversor USB CP2102.
-- DHT11 DATA -> `D5/GPIO5`.
+- DHT11 DATA -> `D4/GPIO4`.
 - DHT11 VCC -> `3V3`.
 - DHT11 GND -> `GND`.
 - Resistor de pull-up de `10 kOhm` entre DATA e `3V3` quando o módulo não o possuir.
