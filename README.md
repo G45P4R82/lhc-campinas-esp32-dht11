@@ -51,7 +51,10 @@ Os canais são separados para não misturar dados, comandos, respostas e status.
 
 ## Configuração do `secrets.h`
 
-Copie o arquivo de exemplo:
+O firmware pode receber as credenciais pelo web flasher e salvá-las na memória
+NVS do ESP32. Assim, não é necessário colocar senhas reais no código.
+
+Para configuração manual durante o desenvolvimento, copie o arquivo de exemplo:
 
 ```bash
 cp secrets.example.h secrets.h
@@ -70,6 +73,15 @@ Preencha os valores da sua rede e do seu broker:
 
 O arquivo `secrets.h` está no `.gitignore` e não deve ser publicado. Se uma
 senha real tiver sido exposta, altere-a no broker MQTT.
+
+O comando serial usado pelo web flasher é:
+
+```text
+CONFIG_SET wifi_ssid|wifi_password|mqtt_host|mqtt_port|mqtt_username|mqtt_password
+```
+
+Depois de receber o comando, o ESP32 salva os valores na NVS e pode reiniciar
+para conectar ao Wi-Fi e ao MQTT.
 
 ## Arduino IDE
 

@@ -1,8 +1,7 @@
 #include <DHT.h>
 #include <PubSubClient.h>
+#include <Preferences.h>
 #include <WiFi.h>
-
-#include "secrets.h"
 
 // ---------------- Configurações ----------------
 #define DHTPIN 5
@@ -22,6 +21,15 @@
 DHT dht(DHTPIN, DHTTYPE);
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
+Preferences preferences;
+
+String wifiSsid;
+String wifiPassword;
+String mqttHost;
+String mqttUsername;
+String mqttPassword;
+uint16_t mqttPort = 1883;
+bool configurationReady = false;
 
 unsigned long lastPublish = 0;
 unsigned long lastMqttAttempt = 0;
@@ -43,6 +51,8 @@ void blinkLed(int count, int onTime, int offTime) {
 
 // ---------------- Protótipos ----------------
 void publishReading(bool responseOnly);
+void loadConfiguration();
+void handleSerialConfiguration();
 
 // ---------------- Callback MQTT ----------------
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
@@ -69,15 +79,111 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   }
 }
 
+// ---------------- Configuração serial ----------------
+void printConfigurationStatus() {
+  Serial.println(F("[CONFIG] status"));
+  Serial.print(F("[CONFIG] sensor=DHT11 pin="));
+  Serial.println(DHTPIN);
+  Serial.print(F("[CONFIG] configured="));
+  Serial.println(configurationReady ? F("true") : F("false"));
+  Serial.println(F("[CONFIG] end"));
+}
+
+void saveConfiguration(
+  const String& newWifiSsid,
+  const String& newWifiPassword,
+  const String& newMqttHost,
+  uint16_t newMqttPort,
+  const String& newMqttUsername,
+  const String& newMqttPassword
+) {
+  preferences.begin("sensor", false);
+  preferences.putString("wifi_ssid", newWifiSsid);
+  preferences.putString("wifi_pass", newWifiPassword);
+  preferences.putString("mqtt_host", newMqttHost);
+  preferences.putUShort("mqtt_port", newMqttPort);
+  preferences.putString("mqtt_user", newMqttUsername);
+  preferences.putString("mqtt_pass", newMqttPassword);
+  preferences.end();
+
+  wifiSsid = newWifiSsid;
+  wifiPassword = newWifiPassword;
+  mqttHost = newMqttHost;
+  mqttPort = newMqttPort;
+  mqttUsername = newMqttUsername;
+  mqttPassword = newMqttPassword;
+  configurationReady = wifiSsid.length() > 0 && mqttHost.length() > 0;
+}
+
+void handleSerialConfiguration() {
+  if (!Serial.available()) return;
+
+  String line = Serial.readStringUntil('\n');
+  line.trim();
+
+  if (line == "CONFIG_STATUS") {
+    printConfigurationStatus();
+    return;
+  }
+
+  if (line == "CONFIG_CLEAR") {
+    preferences.begin("sensor", false);
+    preferences.clear();
+    preferences.end();
+    configurationReady = false;
+    Serial.println(F("CONFIG_OK cleared"));
+    return;
+  }
+
+  if (!line.startsWith("CONFIG_SET ")) return;
+
+  String values = line.substring(11);
+  String fields[6];
+  int start = 0;
+  for (int index = 0; index < 5; index++) {
+    int separator = values.indexOf('|', start);
+    if (separator < 0) {
+      Serial.println(F("CONFIG_ERROR invalid_fields"));
+      return;
+    }
+    fields[index] = values.substring(start, separator);
+    start = separator + 1;
+  }
+  fields[5] = values.substring(start);
+
+  uint16_t newPort = static_cast<uint16_t>(fields[3].toInt());
+  if (fields[0].length() == 0 || fields[2].length() == 0 || newPort == 0) {
+    Serial.println(F("CONFIG_ERROR missing_required_fields"));
+    return;
+  }
+
+  saveConfiguration(fields[0], fields[1], fields[2], newPort, fields[4], fields[5]);
+  mqttClient.setServer(mqttHost.c_str(), mqttPort);
+  Serial.println(F("CONFIG_OK saved"));
+}
+
+void loadConfiguration() {
+  preferences.begin("sensor", true);
+  wifiSsid = preferences.getString("wifi_ssid", "");
+  wifiPassword = preferences.getString("wifi_pass", "");
+  mqttHost = preferences.getString("mqtt_host", "");
+  mqttPort = preferences.getUShort("mqtt_port", 1883);
+  mqttUsername = preferences.getString("mqtt_user", "");
+  mqttPassword = preferences.getString("mqtt_pass", "");
+  preferences.end();
+  configurationReady = wifiSsid.length() > 0 && mqttHost.length() > 0;
+}
+
 // ---------------- Conexões ----------------
 void connectWiFi() {
+  if (!configurationReady) return;
   if (WiFi.status() == WL_CONNECTED) {
     return;
   }
 
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(wifiSsid.c_str(), wifiPassword.c_str());
 
   Serial.print(F("Connecting WiFi"));
 
@@ -92,11 +198,12 @@ void connectWiFi() {
 }
 
 bool connectMqtt() {
+  if (!configurationReady) return false;
   if (mqttClient.connected()) return true;
   if (millis() - lastMqttAttempt < 5000) return false;
   lastMqttAttempt = millis();
   blinkLed(3, 70, 70);
-  if (mqttClient.connect(DEVICE_ID, MQTT_USERNAME, MQTT_PASSWORD)) {
+  if (mqttClient.connect(DEVICE_ID, mqttUsername.c_str(), mqttPassword.c_str())) {
     mqttClient.subscribe(MQTT_COMMAND_TOPIC, 1);
     mqttClient.publish(MQTT_STATUS_TOPIC, "{\"status\":\"online\"}");
     Serial.println(F("MQTT connected"));
@@ -117,7 +224,8 @@ void setup() {
 
   dht.begin();
 
-  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
+  loadConfiguration();
+  mqttClient.setServer(mqttHost.c_str(), mqttPort);
   mqttClient.setKeepAlive(120);
   mqttClient.setBufferSize(512);
   mqttClient.setSocketTimeout(5);
@@ -127,10 +235,17 @@ void setup() {
   lastPublish = millis() - PUBLISH_INTERVAL_MS;
 
   blinkLed(5, 100, 100);
+  Serial.println(F("[CONFIG] envie CONFIG_SET ssid|senha_wifi|host_mqtt|porta|usuario|senha_mqtt"));
+  printConfigurationStatus();
 }
 
 // ---------------- Loop ----------------
 void loop() {
+  handleSerialConfiguration();
+  if (!configurationReady) {
+    delay(20);
+    return;
+  }
   connectWiFi();
   if (!connectMqtt()) {
     delay(100);
