@@ -3,179 +3,111 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ESP32 + DHT11 | Tutorial em slides</title>
+  <title>ESP32 + DHT11 | Aula em slides</title>
   <style>
-    :root { --bg: #07111f; --panel: #101f33; --line: #28415f; --text: #edf5ff; --muted: #a8bfd9; --accent: #53e0b1; --blue: #70a8ff; }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { margin: 0; color: var(--text); background: radial-gradient(circle at 80% 0, #153a59 0, var(--bg) 42%); font: 16px/1.55 system-ui, -apple-system, sans-serif; overflow: hidden; }
-    main { max-width: 1100px; margin: auto; padding: 32px 20px 80px; }
-    section { min-height: 82vh; display: grid; align-content: center; padding: 56px 0; border-bottom: 1px solid var(--line); }
-    .slide { position: absolute; inset: 0; min-height: 100vh; padding: 9vh max(20px, calc((100vw - 1100px) / 2)); overflow-y: auto; opacity: 0; transform: translateX(70px) scale(.97); pointer-events: none; transition: opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
-    .slide.active { opacity: 1; transform: translateX(0) scale(1); pointer-events: auto; }
-    .slide.previous { transform: translateX(-70px) scale(.97); }
-    .slide > * { animation: rise .65s both; }
-    .slide > *:nth-child(2) { animation-delay: .08s; }
-    .slide > *:nth-child(3) { animation-delay: .16s; }
-    @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-    .kicker { color: var(--accent); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: .8rem; }
-    h1 { max-width: 800px; margin: 12px 0 20px; font-size: clamp(2.8rem, 8vw, 6.7rem); line-height: .98; letter-spacing: -.06em; }
-    h2 { margin: 0 0 24px; color: var(--accent); font-size: clamp(2rem, 5vw, 4rem); line-height: 1; letter-spacing: -.04em; }
-    h3 { color: var(--blue); margin-bottom: 8px; }
-    p, li { color: var(--muted); }
-    .lead { max-width: 720px; font-size: 1.25rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
-    .card { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: rgba(16, 31, 51, .82); }
-    .card strong { color: var(--text); }
-    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-    code { color: var(--accent); }
-    pre { overflow-x: auto; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #050b14; color: #d9e8fa; }
-    .steps { counter-reset: step; list-style: none; padding: 0; }
-    .steps li { counter-increment: step; display: grid; grid-template-columns: 42px 1fr; gap: 14px; margin: 18px 0; }
-    .steps li::before { content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #06141a; font-weight: 800; }
-    .warning { border-left: 4px solid #ffbd69; padding: 14px 18px; background: rgba(255,189,105,.1); }
-    .nav { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(7,17,31,.86); backdrop-filter: blur(12px); }
-    .nav a { color: var(--text); text-decoration: none; padding: 6px 10px; border-radius: 8px; }
-    .nav a:hover { background: var(--line); }
-    .controls { position: fixed; z-index: 5; right: 22px; bottom: 22px; display: flex; align-items: center; gap: 10px; }
-    button { cursor: pointer; border: 1px solid var(--line); border-radius: 12px; padding: 10px 15px; color: var(--text); background: var(--panel); font: inherit; }
-    button:hover, button:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
-    .counter { color: var(--muted); font-variant-numeric: tabular-nums; }
-    .reference { width: min(100%, 700px); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 18px 60px rgba(0,0,0,.3); }
-    .caption { margin-top: 8px; color: var(--muted); font-size: .9rem; }
-    footer { padding-top: 30px; color: var(--muted); }
+    :root { --bg:#07111f; --panel:#102038; --line:#2b4667; --text:#eff7ff; --muted:#abc1d9; --accent:#53e0b1; --blue:#79adff; --warn:#ffc36e; }
+    * { box-sizing:border-box; }
+    body { margin:0; overflow:hidden; color:var(--text); background:radial-gradient(circle at 80% 0,#173e5f 0,var(--bg) 46%); font:16px/1.5 system-ui,-apple-system,sans-serif; }
+    main { max-width:1100px; margin:auto; }
+    .slide { position:absolute; inset:0; min-height:100vh; overflow-y:auto; padding:10vh max(22px,calc((100vw - 1100px)/2)); opacity:0; transform:translateX(65px) scale(.98); pointer-events:none; transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.2,1); }
+    .slide.active { opacity:1; transform:none; pointer-events:auto; }
+    .slide.previous { transform:translateX(-65px) scale(.98); }
+    .slide > * { animation:rise .6s both; }
+    .slide > *:nth-child(2) { animation-delay:.08s; }.slide > *:nth-child(3) { animation-delay:.16s; }.slide > *:nth-child(4) { animation-delay:.24s; }
+    @keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+    .kicker { color:var(--accent); font-size:.8rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:850px; margin:12px 0 20px; font-size:clamp(3rem,8vw,7rem); line-height:.95; letter-spacing:-.07em; }
+    h2 { margin:10px 0 22px; color:var(--accent); font-size:clamp(2.2rem,6vw,4.7rem); line-height:1; letter-spacing:-.06em; }
+    h3 { margin:4px 0 8px; color:var(--blue); } p,li { color:var(--muted); }.lead { max-width:780px; font-size:1.25rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; }.card { padding:20px; border:1px solid var(--line); border-radius:17px; background:rgba(16,32,56,.84); }.card strong { color:var(--text); }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; } code { color:var(--accent); } pre { overflow:auto; padding:17px; border:1px solid var(--line); border-radius:14px; background:#040a12; color:#dceaff; }
+    .flow { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px; margin:30px 0; }.node { padding:18px 20px; border:1px solid var(--accent); border-radius:15px; color:var(--text); background:rgba(83,224,177,.1); text-align:center; animation:pulse 2.5s infinite; }.arrow { color:var(--accent); font-size:2rem; } @keyframes pulse { 50% { box-shadow:0 0 24px rgba(83,224,177,.28); } }
+    .steps { counter-reset:n; padding:0; list-style:none; }.steps li { counter-increment:n; display:grid; grid-template-columns:40px 1fr; gap:13px; margin:16px 0; }.steps li:before { content:counter(n); display:grid; place-items:center; width:32px; height:32px; border-radius:50%; color:#06151a; background:var(--accent); font-weight:800; }
+    .warning { padding:14px 18px; border-left:4px solid var(--warn); background:rgba(255,195,110,.1); }.reference { display:block; width:min(100%,700px); max-height:45vh; object-fit:contain; border:1px solid var(--line); border-radius:17px; box-shadow:0 18px 60px #0005; }.caption { margin-top:7px; font-size:.9rem; }
+    .nav { position:fixed; z-index:5; top:12px; left:50%; display:flex; flex-wrap:wrap; gap:5px; max-width:calc(100% - 30px); padding:9px; border:1px solid var(--line); border-radius:14px; background:#07111fdc; transform:translateX(-50%); backdrop-filter:blur(12px); }.nav a { padding:5px 8px; border-radius:8px; color:var(--text); text-decoration:none; font-size:.88rem; }.nav a:hover { background:var(--line); }
+    .controls { position:fixed; z-index:5; right:20px; bottom:18px; display:flex; align-items:center; gap:9px; }.controls button { cursor:pointer; padding:9px 15px; border:1px solid var(--line); border-radius:11px; color:var(--text); background:var(--panel); font-size:1.1rem; }.controls button:hover { border-color:var(--accent); color:var(--accent); }.counter { color:var(--muted); font-variant-numeric:tabular-nums; }
+    footer { position:fixed; bottom:8px; left:20px; color:var(--muted); font-size:.85rem; }
   </style>
 </head>
 <body>
+<nav class="nav" aria-label="Navegação dos slides">
+  <a href="#inicio" data-slide="0">Início</a><a href="#objetivo" data-slide="1">Objetivo</a><a href="#hardware" data-slide="2">Hardware</a><a href="#diagrama" data-slide="3">Diagrama</a><a href="#secrets" data-slide="4">Secrets</a><a href="#mqtt1" data-slide="5">MQTT 1</a><a href="#mqtt2" data-slide="6">MQTT 2</a><a href="#mqtt3" data-slide="7">MQTT 3</a><a href="#mqtt4" data-slide="8">MQTT 4</a><a href="#canais" data-slide="9">Canais</a><a href="#gravar" data-slide="10">Gravar</a><a href="#config" data-slide="11">Código 1</a><a href="#setup" data-slide="12">Código 2</a><a href="#loop" data-slide="13">Código 3</a><a href="#conexoes" data-slide="14">Código 4</a><a href="#leitura" data-slide="15">Código 5</a><a href="#comandos" data-slide="16">Comandos</a><a href="#teste" data-slide="17">Teste</a><a href="#check" data-slide="18">Checklist</a>
+</nav>
+
 <main>
-  <nav class="nav" aria-label="Navegação dos slides">
-    <a href="#inicio" data-slide="0">Início</a><a href="#hardware" data-slide="1">Hardware</a><a href="#codigo" data-slide="2">Código</a><a href="#mqtt" data-slide="3">MQTT</a><a href="#gravar" data-slide="4">Gravar</a><a href="#pages" data-slide="5">Pages</a><a href="#check" data-slide="6">Checklist</a>
-  </nav>
+<section class="slide active" id="inicio"><div class="kicker">Aula prática · 01</div><h1>ESP32 + DHT11</h1><p class="lead">Do fio no sensor até a mensagem MQTT: uma apresentação passo a passo para montar, configurar, gravar e testar o sensor externo.</p><p>Dispositivo: <code>iot-sensor-externo-lhc-001</code></p></section>
 
-  <section class="slide active" id="inicio">
-    <div class="kicker">Tutorial em slides</div>
-    <h1>ESP32 + DHT11</h1>
-    <p class="lead">Como o firmware lê o ambiente, conecta ao Wi-Fi, publica dados via MQTT e como gravar o ESP32 e publicar esta apresentação no GitHub Pages.</p>
-    <p>Projeto: <code>iot-sensor-externo-lhc-001</code> · Campinas</p>
-  </section>
+<section class="slide" id="objetivo"><div class="kicker">Aula prática · 02</div><h2>O que vamos fazer?</h2><div class="grid"><div class="card"><h3>Medir</h3><p>O DHT11 informa temperatura e umidade do ambiente.</p></div><div class="card"><h3>Conectar</h3><p>O ESP32 entra no Wi-Fi e conversa com um broker MQTT.</p></div><div class="card"><h3>Publicar</h3><p>As medições chegam a aplicações inscritas nos tópicos.</p></div><div class="card"><h3>Testar</h3><p>Usaremos o Mosquitto para consultar dados e enviar comandos.</p></div></div></section>
 
-  <section class="slide" id="hardware">
-    <div class="kicker">Slide 02 · Preparação</div><h2>Hardware e ligações</h2>
-    <div class="grid">
-      <div class="card"><h3>Componentes</h3><p>ESP32 DevKit/WROVER, DHT11, cabo USB/CP2102 e resistor de pull-up de 10 kOhm quando o módulo não tiver resistor integrado.</p></div>
-      <div class="card"><h3>DHT11</h3><p><strong>DATA → GPIO 5</strong>, VCC → 3V3 e GND → GND. O código usa <code>#define DHTPIN 5</code>.</p></div>
-      <div class="card"><h3>Bibliotecas</h3><p>DHT sensor library, Adafruit Unified Sensor e PubSubClient.</p></div>
-    </div>
-    <p class="warning"><strong>Atenção:</strong> use esta imagem como referência. A ligação está correta; troque somente o fio de alimentação que está em <code>3V3</code> para <code>VIN</code>. DATA continua no GPIO5, VCC no VIN e GND no GND.</p>
-    <img class="reference" src="https://cdn.shopify.com/s/files/1/0870/0021/9940/files/Screenshot_2026-01-25_211255.png?v=1770030814" alt="ESP32 ligado ao sensor DHT11 em uma protoboard">
-    <p class="caption">Imagem de referência: mantenha DATA e GND como estão e altere apenas a alimentação de 3V3 para VIN.</p>
-  </section>
+<section class="slide" id="hardware"><div class="kicker">Aula prática · 03</div><h2>Materiais e pinos</h2><div class="grid"><div class="card"><h3>Materiais</h3><p>ESP32, DHT11, protoboard, jumpers, cabo USB e resistor de pull-up de 10 kOhm se o módulo não possuir um.</p></div><div class="card"><h3>Ligação usada pelo código</h3><p><strong>DATA → GPIO5</strong><br>VCC → VIN<br>GND → GND</p></div><div class="card"><h3>Bibliotecas</h3><p>DHT sensor library, Adafruit Unified Sensor e PubSubClient.</p></div></div><p class="warning"><strong>Importante:</strong> o código usa <code>#define DHTPIN 5</code>. A referência antiga que cita GPIO4 deve ser desconsiderada.</p></section>
 
-  <section class="slide" id="codigo">
-    <div class="kicker">Slide 03 · Firmware</div><h2>Como o código funciona</h2>
-    <ol class="steps">
-      <li><div><strong><code>setup()</code></strong><br>Configura LED, serial, DHT11, broker MQTT e callback de comandos. A primeira publicação fica preparada para acontecer logo após a conexão.</div></li>
-      <li><div><strong><code>loop()</code></strong><br>Garante Wi-Fi, tenta MQTT, processa mensagens com <code>mqttClient.loop()</code> e publica a cada 30 segundos.</div></li>
-      <li><div><strong><code>publishReading()</code></strong><br>Lê temperatura e umidade, calcula sensação térmica, monta JSON e publica no tópico adequado.</div></li>
-      <li><div><strong>LED de status</strong><br>O LED no GPIO2 é ativo em nível baixo: <code>LOW</code> acende e <code>HIGH</code> apaga.</div></li>
-    </ol>
-    <pre><code>if (millis() - lastPublish &gt;= PUBLISH_INTERVAL_MS) {
-  lastPublish = millis();
-  publishReading(false);
-}</code></pre>
-  </section>
+<section class="slide" id="diagrama"><div class="kicker">Aula prática · 04</div><h2>Diagrama do DHT11</h2><img class="reference" src="https://cdn.shopify.com/s/files/1/0870/0021/9940/files/Screenshot_2026-01-25_211255.png?v=1770030814" alt="Diagrama de ligação do ESP32 ao DHT11"><p class="warning"><strong>Use a imagem como referência:</strong> troque somente a alimentação de <code>3V3</code> para <code>VIN</code>. De resto, a ligação está correta: DATA no GPIO5 e GND no GND.</p></section>
 
-  <section class="slide" id="mqtt">
-    <div class="kicker">Slide 04 · Comunicação</div><h2>MQTT em quatro canais</h2>
-    <div class="grid">
-      <div class="card"><h3>Dados</h3><code>sensores/.../ambiente</code><p>Leituras periódicas a cada 30 segundos.</p></div>
-      <div class="card"><h3>Resposta</h3><code>sensores/.../resposta</code><p>Resultado de uma leitura solicitada.</p></div>
-      <div class="card"><h3>Comandos</h3><code>comandos/.../cmd</code><p>Recebe <code>read</code> e <code>restart</code>.</p></div>
-      <div class="card"><h3>Status</h3><code>sensores/.../status</code><p>Publica <code>{"status":"online"}</code> ao conectar.</p></div>
-    </div>
-    <pre><code>{
-  "device_id": "iot-sensor-externo-lhc-001",
-  "temperature_c": 25.40,
-  "humidity_percent": 60.00,
-  "heat_index_c": 26.10,
-  "sensor_status": "ok"
-}</code></pre>
-  </section>
+<section class="slide" id="secrets"><div class="kicker">Aula prática · 05</div><h2>Configure o <code>secrets.h</code></h2><p>Duplique <code>secrets.example.h</code>, renomeie para <code>secrets.h</code> e substitua os valores de exemplo pelas suas credenciais.</p><pre><code>#define WIFI_SSID "NOME_DA_SUA_REDE"
+#define WIFI_PASSWORD "SENHA_DO_WIFI"
+#define MQTT_HOST "ENDERECO_DO_BROKER"
+#define MQTT_PORT 1883
+#define MQTT_USERNAME "SEU_USUARIO_MQTT"
+#define MQTT_PASSWORD "SUA_SENHA_MQTT"</code></pre><p class="warning"><strong>Segurança:</strong> <code>secrets.h</code> está no <code>.gitignore</code>. Não o publique. Use sempre placeholders em prints, apresentações e comandos compartilhados.</p></section>
 
-  <section class="slide" id="gravar">
-    <div class="kicker">Slide 05 · Upload</div><h2>Como gravar o ESP32</h2>
-    <ol class="steps">
-      <li><div>Instale o Arduino IDE, o suporte para placas ESP32 e as bibliotecas do projeto.</div></li>
-      <li><div>Copie <code>secrets.example.h</code> para <code>secrets.h</code> e preencha Wi-Fi e MQTT. Nunca publique esse arquivo.</div></li>
-      <li><div>Abra o arquivo <code>lhc-campinas-esp32-dht11.ino</code>, selecione <strong>ESP32 Dev Module</strong> e a porta USB.</div></li>
-      <li><div>Compile e faça upload. Se necessário, segure BOOT, pressione e solte EN/RESET, depois solte BOOT.</div></li>
-      <li><div>Abra o Monitor Serial em <strong>115200 baud</strong> e observe conexão, leitura e publicação.</div></li>
-    </ol>
-    <pre><code>arduino-cli lib install "DHT sensor library" "Adafruit Unified Sensor" PubSubClient
+<section class="slide" id="mqtt1"><div class="kicker">MQTT básico · 01/04</div><h2>O que é MQTT?</h2><p class="lead">MQTT é um protocolo leve de mensagens. Ele permite que dispositivos pequenos troquem informações sem precisar conhecer diretamente todos os outros dispositivos.</p><div class="grid"><div class="card"><h3>Leve</h3><p>Mensagens pequenas e baixo consumo de rede.</p></div><div class="card"><h3>Assíncrono</h3><p>Quem publica não precisa esperar o receptor responder.</p></div><div class="card"><h3>Ideal para IoT</h3><p>Funciona bem em sensores, automação e redes instáveis.</p></div></div></section>
+
+<section class="slide" id="mqtt2"><div class="kicker">MQTT básico · 02/04</div><h2>Cliente, broker e tópico</h2><div class="grid"><div class="card"><h3>Cliente</h3><p>Qualquer programa conectado ao MQTT. Aqui, o ESP32 e o computador são clientes.</p></div><div class="card"><h3>Broker</h3><p>Servidor central que recebe mensagens e entrega aos clientes interessados.</p></div><div class="card"><h3>Tópico</h3><p>Endereço textual que organiza as mensagens, como <code>sensores/.../ambiente</code>.</p></div></div><p>O cliente pode fazer <strong>publish</strong> para enviar ou <strong>subscribe</strong> para receber.</p></section>
+
+<section class="slide" id="mqtt3"><div class="kicker">MQTT básico · 03/04</div><h2>Como uma mensagem viaja?</h2><div class="flow"><div class="node">ESP32<br><small>publish</small></div><div class="arrow">→</div><div class="node">Broker MQTT<br><small>recebe e roteia</small></div><div class="arrow">→</div><div class="node">Aplicação<br><small>subscribe</small></div></div><ol class="steps"><li>O ESP32 conecta ao broker.</li><li>Publica uma mensagem em um tópico.</li><li>O broker identifica quem está inscrito naquele tópico.</li><li>O broker entrega a mensagem aos assinantes.</li></ol></section>
+
+<section class="slide" id="mqtt4"><div class="kicker">MQTT básico · 04/04</div><h2>Por que separar canais?</h2><p>Um tópico representa uma finalidade. Separar finalidades evita misturar leitura, comando e estado na mesma fila.</p><div class="grid"><div class="card"><h3>Organização</h3><p>Cada mensagem tem um lugar previsível.</p></div><div class="card"><h3>Permissões</h3><p>É possível permitir publicar ou ler apenas determinados tópicos.</p></div><div class="card"><h3>Consumo</h3><p>Uma aplicação pode ler dados sem receber comandos.</p></div><div class="card"><h3>Escala</h3><p>Outros sensores podem usar a mesma estrutura com IDs diferentes.</p></div></div></section>
+
+<section class="slide" id="canais"><div class="kicker">MQTT neste projeto</div><h2>Os quatro canais</h2><div class="grid"><div class="card"><h3>1 · Ambiente</h3><code>sensores/.../ambiente</code><p>O ESP32 publica temperatura, umidade e sensação térmica a cada 30 segundos.</p></div><div class="card"><h3>2 · Resposta</h3><code>sensores/.../resposta</code><p>Recebe o resultado de uma leitura solicitada pelo comando <code>read</code>.</p></div><div class="card"><h3>3 · Comandos</h3><code>comandos/.../cmd</code><p>O computador ou sistema envia instruções para o ESP32.</p></div><div class="card"><h3>4 · Status</h3><code>sensores/.../status</code><p>Informa estados de conexão, como <code>{"status":"online"}</code>.</p></div></div></section>
+
+<section class="slide" id="gravar"><div class="kicker">Aula prática · 06</div><h2>Instale e grave</h2><ol class="steps"><li>Instale Arduino IDE, suporte ESP32 e as três bibliotecas do projeto.</li><li>Configure o <code>secrets.h</code>.</li><li>Abra o arquivo <code>lhc-campinas-esp32-dht11.ino</code>.</li><li>Selecione <strong>ESP32 Dev Module</strong> e a porta USB.</li><li>Faça upload. Se necessário, segure BOOT, pressione e solte EN/RESET e depois solte BOOT.</li><li>Abra o Monitor Serial em <strong>115200 baud</strong>.</li></ol><pre><code>arduino-cli lib install "DHT sensor library" "Adafruit Unified Sensor" PubSubClient
 arduino-cli compile --fqbn esp32:esp32:esp32 lhc-campinas-esp32-dht11
-arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 lhc-campinas-esp32-dht11
-arduino-cli monitor -p /dev/ttyUSB0 --config baudrate=115200</code></pre>
-  </section>
+arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 lhc-campinas-esp32-dht11</code></pre></section>
 
-  <section class="slide" id="pages">
-    <div class="kicker">Slide 06 · Publicação</div><h2>Como publicar no GitHub Pages</h2>
-    <ol class="steps">
-      <li><div>Faça commit e push deste projeto para o GitHub. A apresentação está em <code>docs/index.html</code>.</div></li>
-      <li><div>No repositório, abra <strong>Settings → Pages</strong>.</div></li>
-      <li><div>Em <strong>Build and deployment</strong>, escolha <strong>Deploy from a branch</strong>.</div></li>
-      <li><div>Selecione a branch <code>main</code> e a pasta <code>/docs</code>; clique em <strong>Save</strong>.</div></li>
-      <li><div>Aguarde o workflow terminar. O endereço será parecido com:<br><code>https://G45P4R82.github.io/lhc-campinas-esp32-dht11/</code></div></li>
-    </ol>
-    <pre><code>git add docs/index.html README.md
-git push origin main</code></pre>
-  </section>
+<section class="slide" id="config"><div class="kicker">Código · 01/05</div><h2>Configurações e objetos</h2><pre><code>#define DHTPIN 5
+#define DHTTYPE DHT11
+#define PUBLISH_INTERVAL_MS 30000UL
 
-  <section class="slide" id="check">
-    <div class="kicker">Slide 07 · Validação</div><h2>Checklist final</h2>
-    <div class="grid">
-      <div class="card"><h3>ESP32</h3><p>GPIO correto, alimentação 3V3, serial em 115200 e leitura válida do DHT11.</p></div>
-      <div class="card"><h3>Rede</h3><p>Wi-Fi conectado, IP exibido e broker MQTT acessível na porta configurada.</p></div>
-      <div class="card"><h3>MQTT</h3><p>Mensagem online recebida, leitura periódica publicada e comando <code>read</code> respondendo.</p></div>
-      <div class="card"><h3>Segurança</h3><p><code>secrets.h</code> no <code>.gitignore</code>; se uma senha real foi exposta, troque-a no broker.</p></div>
-    </div>
-  </section>
-  <div class="controls" aria-label="Controles da apresentação">
-    <button id="previous" type="button" aria-label="Slide anterior">←</button>
-    <span class="counter" id="counter">1 / 7</span>
-    <button id="next" type="button" aria-label="Próximo slide">→</button>
-  </div>
-  <footer>Material gerado para o projeto Sensor Externo LHC Campinas.</footer>
+DHT dht(DHTPIN, DHTTYPE);
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);</code></pre><p>As constantes definem o pino, o tipo do sensor e o intervalo. Os objetos representam o DHT11, a rede TCP e o cliente MQTT.</p></section>
+
+<section class="slide" id="setup"><div class="kicker">Código · 02/05</div><h2>O que acontece no <code>setup()</code>?</h2><ol class="steps"><li>Configura o LED de status.</li><li>Inicia a porta serial em 115200.</li><li>Inicializa o DHT11 com <code>dht.begin()</code>.</li><li>Define endereço, porta e callback do MQTT.</li><li>Força a primeira publicação logo após conectar.</li></ol></section>
+
+<section class="slide" id="loop"><div class="kicker">Código · 03/05</div><h2>O ciclo do <code>loop()</code></h2><pre><code>connectWiFi();
+connectMqtt();
+mqttClient.loop();
+
+if (millis() - lastPublish &gt;= 30000) {
+  publishReading(false);
+}</code></pre><p>O loop mantém as conexões, processa comandos recebidos e verifica sem bloquear o relógio se já chegou o momento da próxima leitura.</p></section>
+
+<section class="slide" id="conexoes"><div class="kicker">Código · 04/05</div><h2>Wi-Fi e MQTT</h2><div class="grid"><div class="card"><h3><code>connectWiFi()</code></h3><p>Coloca o ESP32 em modo estação, conecta na rede e aguarda até receber um IP.</p></div><div class="card"><h3><code>connectMqtt()</code></h3><p>Tenta o broker a cada 5 segundos, assina o tópico de comandos e publica o status online.</p></div></div><p>Se alguma conexão cair, o loop tenta restabelecê-la.</p></section>
+
+<section class="slide" id="leitura"><div class="kicker">Código · 05/05</div><h2>Leitura, JSON e publicação</h2><ol class="steps"><li><code>dht.readHumidity()</code> lê a umidade.</li><li><code>dht.readTemperature()</code> lê a temperatura.</li><li>O código calcula a sensação térmica.</li><li><code>snprintf()</code> monta o payload JSON.</li><li><code>mqttClient.publish()</code> envia ao tópico ambiente ou resposta.</li></ol><pre><code>{"temperature_c":25.40,"humidity_percent":60.00,"sensor_status":"ok"}</code></pre></section>
+
+<section class="slide" id="comandos"><div class="kicker">Controle remoto</div><h2>Comandos disponíveis</h2><div class="grid"><div class="card"><h3><code>read</code></h3><p>Solicita uma leitura imediata. A resposta é publicada no canal <code>resposta</code>.</p></div><div class="card"><h3><code>restart</code></h3><p>Publica um aviso e reinicia o ESP32. Use apenas quando realmente necessário.</p></div></div><p>O callback MQTT só aceita comandos recebidos no tópico <code>comandos/.../cmd</code>.</p></section>
+
+<section class="slide" id="teste"><div class="kicker">Teste prático</div><h2>Consulte com Mosquitto</h2><p>Substitua os placeholders pelas suas credenciais do <code>secrets.h</code>.</p><pre><code>mosquitto_sub \
+  -h MQTT_HOST -p MQTT_PORT \
+  -u MQTT_USERNAME -P MQTT_PASSWORD \
+  -t "sensores/iot-sensor-externo-lhc-001/#" -v</code></pre><p>Esse comando acompanha ambiente, resposta e status.</p><pre><code>mosquitto_pub \
+  -h MQTT_HOST -p MQTT_PORT \
+  -u MQTT_USERNAME -P MQTT_PASSWORD \
+  -t "comandos/iot-sensor-externo-lhc-001/cmd" \
+  -m "read"</code></pre><p>Depois do <code>read</code>, procure uma mensagem no tópico <code>resposta</code>.</p></section>
+
+<section class="slide" id="check"><div class="kicker">Conclusão</div><h2>Checklist final</h2><div class="grid"><div class="card"><h3>Montagem</h3><p>DATA no GPIO5, alimentação no VIN e GND no GND.</p></div><div class="card"><h3>Configuração</h3><p><code>secrets.h</code> preenchido e fora do Git.</p></div><div class="card"><h3>Conexão</h3><p>Wi-Fi conectado, status <code>online</code> recebido e broker acessível.</p></div><div class="card"><h3>Dados</h3><p><code>mosquitto_sub</code> mostra leituras e o comando <code>read</code> gera resposta.</p></div></div><p class="lead">Use <code>←</code> para voltar, <code>→</code> para avançar, <code>Home</code> para o início e <code>End</code> para o fim.</p></section>
 </main>
+<div class="controls"><button id="previous" aria-label="Slide anterior">←</button><span class="counter" id="counter">1 / 19</span><button id="next" aria-label="Próximo slide">→</button></div>
+<footer>ESP32 + DHT11 · LHC Campinas</footer>
 <script>
-  const slides = [...document.querySelectorAll('.slide')];
-  const counter = document.querySelector('#counter');
-  let current = 0;
-
-  function showSlide(index, direction = 1) {
-    const next = Math.max(0, Math.min(index, slides.length - 1));
-    slides[current].classList.remove('active');
-    slides[current].classList.toggle('previous', direction < 0);
-    current = next;
-    slides[current].classList.remove('previous');
-    slides[current].classList.add('active');
-    counter.textContent = `${current + 1} / ${slides.length}`;
-    history.replaceState(null, '', `#${slides[current].id}`);
-  }
-
-  document.querySelector('#previous').addEventListener('click', () => showSlide(current - 1, -1));
-  document.querySelector('#next').addEventListener('click', () => showSlide(current + 1, 1));
-  document.querySelectorAll('[data-slide]').forEach(link => link.addEventListener('click', event => {
-    event.preventDefault();
-    showSlide(Number(link.dataset.slide), Number(link.dataset.slide) < current ? -1 : 1);
-  }));
-  document.addEventListener('keydown', event => {
-    if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key)) showSlide(current - 1, -1);
-    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(event.key)) showSlide(current + 1, 1);
-    if (event.key === 'Home') showSlide(0, -1);
-    if (event.key === 'End') showSlide(slides.length - 1, 1);
-  });
-  const initial = slides.findIndex(slide => `#${slide.id}` === location.hash);
-  if (initial >= 0) showSlide(initial);
+  const slides=[...document.querySelectorAll('.slide')], counter=document.querySelector('#counter'); let current=0;
+  function showSlide(index,direction=1){const next=Math.max(0,Math.min(index,slides.length-1)); slides[current].classList.remove('active'); slides[current].classList.toggle('previous',direction<0); current=next; slides[current].classList.remove('previous'); slides[current].classList.add('active'); counter.textContent=`${current+1} / ${slides.length}`; history.replaceState(null,'',`#${slides[current].id}`);}
+  document.querySelector('#previous').onclick=()=>showSlide(current-1,-1); document.querySelector('#next').onclick=()=>showSlide(current+1,1);
+  document.querySelectorAll('[data-slide]').forEach(a=>a.onclick=e=>{e.preventDefault(); const n=Number(a.dataset.slide); showSlide(n,n<current?-1:1);});
+  document.onkeydown=e=>{if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key))showSlide(current-1,-1);if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key))showSlide(current+1,1);if(e.key==='Home')showSlide(0,-1);if(e.key==='End')showSlide(slides.length-1,1);};
+  const initial=slides.findIndex(s=>`#${s.id}`===location.hash); if(initial>=0)showSlide(initial);
 </script>
 </body>
 </html>

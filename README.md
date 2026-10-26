@@ -52,32 +52,11 @@ Credenciais reais nunca devem ser commitadas neste repositorio publico.
 
 ## Tutorial em formato de slides
 
-O tutorial visual está em `docs/index.html` e pode ser publicado pelo GitHub
-Pages. Na apresentação, use `←` para voltar e `→` para avançar. As teclas
-`Home` e `End` vão para o primeiro e o último slide.
+O tutorial visual está em `docs/index.html` e apresenta montagem, configuração
+do `secrets.h`, quatro conceitos básicos de MQTT, funcionamento do firmware,
+canais MQTT e testes com Mosquitto. Use `←` para voltar, `→` para avançar,
+`Home` para o início e `End` para o último slide.
 
-### Publicar no GitHub Pages
-
-1. Faça commit e push da pasta `docs` para a branch `main`.
-2. No GitHub, abra `Settings > Pages`.
-3. Em `Build and deployment`, escolha `Deploy from a branch`.
-4. Selecione a branch `main` e a pasta `/docs`.
-5. Clique em `Save` e aguarde a publicação.
-
-O endereço normalmente será:
-
-```text
-https://G45P4R82.github.io/lhc-campinas-esp32-dht11/
-```
-
-Para publicar pelo terminal:
-
-```bash
-git add docs/index.html README.md
-git commit -m "Adiciona tutorial em slides"
-git push origin main
-```
-
-> Importante: o arquivo `secrets.h` está protegido pelo `.gitignore`. Nunca
-> remova essa proteção nem publique senhas Wi-Fi ou MQTT. Se uma credencial
-> real já tiver sido exposta, altere-a no broker.
+O arquivo `secrets.h` está protegido pelo `.gitignore`. Nunca remova essa
+proteção nem publique senhas Wi-Fi ou MQTT. Se uma credencial real tiver sido
+exposta, altere-a no broker.
