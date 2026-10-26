@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ESP32 + DHT11 | Tutorial em slides</title>
+  <style>
+    :root { --bg: #07111f; --panel: #101f33; --line: #28415f; --text: #edf5ff; --muted: #a8bfd9; --accent: #53e0b1; --blue: #70a8ff; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--text); background: radial-gradient(circle at 80% 0, #153a59 0, var(--bg) 42%); font: 16px/1.55 system-ui, -apple-system, sans-serif; }
+    main { max-width: 1100px; margin: auto; padding: 32px 20px 80px; }
+    section { min-height: 82vh; display: grid; align-content: center; padding: 56px 0; border-bottom: 1px solid var(--line); }
+    .kicker { color: var(--accent); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: .8rem; }
+    h1 { max-width: 800px; margin: 12px 0 20px; font-size: clamp(2.8rem, 8vw, 6.7rem); line-height: .98; letter-spacing: -.06em; }
+    h2 { margin: 0 0 24px; color: var(--accent); font-size: clamp(2rem, 5vw, 4rem); line-height: 1; letter-spacing: -.04em; }
+    h3 { color: var(--blue); margin-bottom: 8px; }
+    p, li { color: var(--muted); }
+    .lead { max-width: 720px; font-size: 1.25rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+    .card { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: rgba(16, 31, 51, .82); }
+    .card strong { color: var(--text); }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--accent); }
+    pre { overflow-x: auto; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #050b14; color: #d9e8fa; }
+    .steps { counter-reset: step; list-style: none; padding: 0; }
+    .steps li { counter-increment: step; display: grid; grid-template-columns: 42px 1fr; gap: 14px; margin: 18px 0; }
+    .steps li::before { content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #06141a; font-weight: 800; }
+    .warning { border-left: 4px solid #ffbd69; padding: 14px 18px; background: rgba(255,189,105,.1); }
+    .nav { position: sticky; top: 12px; z-index: 2; display: flex; gap: 8px; flex-wrap: wrap; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(7,17,31,.86); backdrop-filter: blur(12px); }
+    .nav a { color: var(--text); text-decoration: none; padding: 6px 10px; border-radius: 8px; }
+    .nav a:hover { background: var(--line); }
+    footer { padding-top: 30px; color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <nav class="nav" aria-label="Navegação dos slides">
+    <a href="#inicio">Início</a><a href="#hardware">Hardware</a><a href="#codigo">Código</a><a href="#mqtt">MQTT</a><a href="#gravar">Gravar</a><a href="#pages">Pages</a><a href="#check">Checklist</a>
+  </nav>
+
+  <section id="inicio">
+    <div class="kicker">Tutorial em slides</div>
+    <h1>ESP32 + DHT11</h1>
+    <p class="lead">Como o firmware lê o ambiente, conecta ao Wi-Fi, publica dados via MQTT e como gravar o ESP32 e publicar esta apresentação no GitHub Pages.</p>
+    <p>Projeto: <code>iot-sensor-externo-lhc-001</code> · Campinas</p>
+  </section>
+
+  <section id="hardware">
+    <div class="kicker">Slide 02 · Preparação</div><h2>Hardware e ligações</h2>
+    <div class="grid">
+      <div class="card"><h3>Componentes</h3><p>ESP32 DevKit/WROVER, DHT11, cabo USB/CP2102 e resistor de pull-up de 10 kOhm quando o módulo não tiver resistor integrado.</p></div>
+      <div class="card"><h3>DHT11</h3><p><strong>DATA → GPIO 5</strong>, VCC → 3V3 e GND → GND. O código usa <code>#define DHTPIN 5</code>.</p></div>
+      <div class="card"><h3>Bibliotecas</h3><p>DHT sensor library, Adafruit Unified Sensor e PubSubClient.</p></div>
+    </div>
+    <p class="warning"><strong>Atenção:</strong> o README original menciona D4/GPIO4, mas o código usa GPIO5. A ligação precisa seguir o código ou o valor de <code>DHTPIN</code> deve ser alterado.</p>
+  </section>
+
+  <section id="codigo">
+    <div class="kicker">Slide 03 · Firmware</div><h2>Como o código funciona</h2>
+    <ol class="steps">
+      <li><div><strong><code>setup()</code></strong><br>Configura LED, serial, DHT11, broker MQTT e callback de comandos. A primeira publicação fica preparada para acontecer logo após a conexão.</div></li>
+      <li><div><strong><code>loop()</code></strong><br>Garante Wi-Fi, tenta MQTT, processa mensagens com <code>mqttClient.loop()</code> e publica a cada 30 segundos.</div></li>
+      <li><div><strong><code>publishReading()</code></strong><br>Lê temperatura e umidade, calcula sensação térmica, monta JSON e publica no tópico adequado.</div></li>
+      <li><div><strong>LED de status</strong><br>O LED no GPIO2 é ativo em nível baixo: <code>LOW</code> acende e <code>HIGH</code> apaga.</div></li>
+    </ol>
+    <pre><code>if (millis() - lastPublish &gt;= PUBLISH_INTERVAL_MS) {
+  lastPublish = millis();
+  publishReading(false);
+}</code></pre>
+  </section>
+
+  <section id="mqtt">
+    <div class="kicker">Slide 04 · Comunicação</div><h2>MQTT em quatro canais</h2>
+    <div class="grid">
+      <div class="card"><h3>Dados</h3><code>sensores/.../ambiente</code><p>Leituras periódicas a cada 30 segundos.</p></div>
+      <div class="card"><h3>Resposta</h3><code>sensores/.../resposta</code><p>Resultado de uma leitura solicitada.</p></div>
+      <div class="card"><h3>Comandos</h3><code>comandos/.../cmd</code><p>Recebe <code>read</code> e <code>restart</code>.</p></div>
+      <div class="card"><h3>Status</h3><code>sensores/.../status</code><p>Publica <code>{"status":"online"}</code> ao conectar.</p></div>
+    </div>
+    <pre><code>{
+  "device_id": "iot-sensor-externo-lhc-001",
+  "temperature_c": 25.40,
+  "humidity_percent": 60.00,
+  "heat_index_c": 26.10,
+  "sensor_status": "ok"
+}</code></pre>
+  </section>
+
+  <section id="gravar">
+    <div class="kicker">Slide 05 · Upload</div><h2>Como gravar o ESP32</h2>
+    <ol class="steps">
+      <li><div>Instale o Arduino IDE, o suporte para placas ESP32 e as bibliotecas do projeto.</div></li>
+      <li><div>Copie <code>secrets.example.h</code> para <code>secrets.h</code> e preencha Wi-Fi e MQTT. Nunca publique esse arquivo.</div></li>
+      <li><div>Abra o arquivo <code>lhc-campinas-esp32-dht11.ino</code>, selecione <strong>ESP32 Dev Module</strong> e a porta USB.</div></li>
+      <li><div>Compile e faça upload. Se necessário, segure BOOT, pressione e solte EN/RESET, depois solte BOOT.</div></li>
+      <li><div>Abra o Monitor Serial em <strong>115200 baud</strong> e observe conexão, leitura e publicação.</div></li>
+    </ol>
+    <pre><code>arduino-cli lib install "DHT sensor library" "Adafruit Unified Sensor" PubSubClient
+arduino-cli compile --fqbn esp32:esp32:esp32 lhc-campinas-esp32-dht11
+arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 lhc-campinas-esp32-dht11
+arduino-cli monitor -p /dev/ttyUSB0 --config baudrate=115200</code></pre>
+  </section>
+
+  <section id="pages">
+    <div class="kicker">Slide 06 · Publicação</div><h2>Como publicar no GitHub Pages</h2>
+    <ol class="steps">
+      <li><div>Faça commit e push deste projeto para o GitHub. A apresentação está em <code>docs/index.html</code>.</div></li>
+      <li><div>No repositório, abra <strong>Settings → Pages</strong>.</div></li>
+      <li><div>Em <strong>Build and deployment</strong>, escolha <strong>Deploy from a branch</strong>.</div></li>
+      <li><div>Selecione a branch <code>main</code> e a pasta <code>/docs</code>; clique em <strong>Save</strong>.</div></li>
+      <li><div>Aguarde o workflow terminar. O endereço será parecido com:<br><code>https://G45P4R82.github.io/lhc-campinas-esp32-dht11/</code></div></li>
+    </ol>
+    <pre><code>git add docs/index.html README.md
+git push origin main</code></pre>
+  </section>
+
+  <section id="check">
+    <div class="kicker">Slide 07 · Validação</div><h2>Checklist final</h2>
+    <div class="grid">
+      <div class="card"><h3>ESP32</h3><p>GPIO correto, alimentação 3V3, serial em 115200 e leitura válida do DHT11.</p></div>
+      <div class="card"><h3>Rede</h3><p>Wi-Fi conectado, IP exibido e broker MQTT acessível na porta configurada.</p></div>
+      <div class="card"><h3>MQTT</h3><p>Mensagem online recebida, leitura periódica publicada e comando <code>read</code> respondendo.</p></div>
+      <div class="card"><h3>Segurança</h3><p><code>secrets.h</code> no <code>.gitignore</code>; se uma senha real foi exposta, troque-a no broker.</p></div>
+    </div>
+  </section>
+  <footer>Material gerado para o projeto Sensor Externo LHC Campinas.</footer>
+</main>
+</body>
+</html>

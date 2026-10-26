@@ -49,3 +49,34 @@ O firmware publica a cada 30 segundos, possui watchdog, reconecta Wi-Fi/MQTT,
 envia heartbeat online e aceita os comandos `read` e `restart`.
 
 Credenciais reais nunca devem ser commitadas neste repositorio publico.
+
+## Tutorial em formato de slides
+
+O tutorial visual está em `docs/index.html` e pode ser publicado pelo GitHub
+Pages.
+
+### Publicar no GitHub Pages
+
+1. Faça commit e push da pasta `docs` para a branch `main`.
+2. No GitHub, abra `Settings > Pages`.
+3. Em `Build and deployment`, escolha `Deploy from a branch`.
+4. Selecione a branch `main` e a pasta `/docs`.
+5. Clique em `Save` e aguarde a publicação.
+
+O endereço normalmente será:
+
+```text
+https://G45P4R82.github.io/lhc-campinas-esp32-dht11/
+```
+
+Para publicar pelo terminal:
+
+```bash
+git add docs/index.html README.md
+git commit -m "Adiciona tutorial em slides"
+git push origin main
+```
+
+> Importante: o arquivo `secrets.h` está protegido pelo `.gitignore`. Nunca
+> remova essa proteção nem publique senhas Wi-Fi ou MQTT. Se uma credencial
+> real já tiver sido exposta, altere-a no broker.
