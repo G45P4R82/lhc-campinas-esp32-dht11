@@ -8,9 +8,16 @@
     :root { --bg: #07111f; --panel: #101f33; --line: #28415f; --text: #edf5ff; --muted: #a8bfd9; --accent: #53e0b1; --blue: #70a8ff; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin: 0; color: var(--text); background: radial-gradient(circle at 80% 0, #153a59 0, var(--bg) 42%); font: 16px/1.55 system-ui, -apple-system, sans-serif; }
+    body { margin: 0; color: var(--text); background: radial-gradient(circle at 80% 0, #153a59 0, var(--bg) 42%); font: 16px/1.55 system-ui, -apple-system, sans-serif; overflow: hidden; }
     main { max-width: 1100px; margin: auto; padding: 32px 20px 80px; }
     section { min-height: 82vh; display: grid; align-content: center; padding: 56px 0; border-bottom: 1px solid var(--line); }
+    .slide { position: absolute; inset: 0; min-height: 100vh; padding: 9vh max(20px, calc((100vw - 1100px) / 2)); overflow-y: auto; opacity: 0; transform: translateX(70px) scale(.97); pointer-events: none; transition: opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
+    .slide.active { opacity: 1; transform: translateX(0) scale(1); pointer-events: auto; }
+    .slide.previous { transform: translateX(-70px) scale(.97); }
+    .slide > * { animation: rise .65s both; }
+    .slide > *:nth-child(2) { animation-delay: .08s; }
+    .slide > *:nth-child(3) { animation-delay: .16s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
     .kicker { color: var(--accent); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: .8rem; }
     h1 { max-width: 800px; margin: 12px 0 20px; font-size: clamp(2.8rem, 8vw, 6.7rem); line-height: .98; letter-spacing: -.06em; }
     h2 { margin: 0 0 24px; color: var(--accent); font-size: clamp(2rem, 5vw, 4rem); line-height: 1; letter-spacing: -.04em; }
@@ -27,36 +34,44 @@
     .steps li { counter-increment: step; display: grid; grid-template-columns: 42px 1fr; gap: 14px; margin: 18px 0; }
     .steps li::before { content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #06141a; font-weight: 800; }
     .warning { border-left: 4px solid #ffbd69; padding: 14px 18px; background: rgba(255,189,105,.1); }
-    .nav { position: sticky; top: 12px; z-index: 2; display: flex; gap: 8px; flex-wrap: wrap; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(7,17,31,.86); backdrop-filter: blur(12px); }
+    .nav { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(7,17,31,.86); backdrop-filter: blur(12px); }
     .nav a { color: var(--text); text-decoration: none; padding: 6px 10px; border-radius: 8px; }
     .nav a:hover { background: var(--line); }
+    .controls { position: fixed; z-index: 5; right: 22px; bottom: 22px; display: flex; align-items: center; gap: 10px; }
+    button { cursor: pointer; border: 1px solid var(--line); border-radius: 12px; padding: 10px 15px; color: var(--text); background: var(--panel); font: inherit; }
+    button:hover, button:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+    .counter { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .reference { width: min(100%, 700px); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 18px 60px rgba(0,0,0,.3); }
+    .caption { margin-top: 8px; color: var(--muted); font-size: .9rem; }
     footer { padding-top: 30px; color: var(--muted); }
   </style>
 </head>
 <body>
 <main>
   <nav class="nav" aria-label="Navegação dos slides">
-    <a href="#inicio">Início</a><a href="#hardware">Hardware</a><a href="#codigo">Código</a><a href="#mqtt">MQTT</a><a href="#gravar">Gravar</a><a href="#pages">Pages</a><a href="#check">Checklist</a>
+    <a href="#inicio" data-slide="0">Início</a><a href="#hardware" data-slide="1">Hardware</a><a href="#codigo" data-slide="2">Código</a><a href="#mqtt" data-slide="3">MQTT</a><a href="#gravar" data-slide="4">Gravar</a><a href="#pages" data-slide="5">Pages</a><a href="#check" data-slide="6">Checklist</a>
   </nav>
 
-  <section id="inicio">
+  <section class="slide active" id="inicio">
     <div class="kicker">Tutorial em slides</div>
     <h1>ESP32 + DHT11</h1>
     <p class="lead">Como o firmware lê o ambiente, conecta ao Wi-Fi, publica dados via MQTT e como gravar o ESP32 e publicar esta apresentação no GitHub Pages.</p>
     <p>Projeto: <code>iot-sensor-externo-lhc-001</code> · Campinas</p>
   </section>
 
-  <section id="hardware">
+  <section class="slide" id="hardware">
     <div class="kicker">Slide 02 · Preparação</div><h2>Hardware e ligações</h2>
     <div class="grid">
       <div class="card"><h3>Componentes</h3><p>ESP32 DevKit/WROVER, DHT11, cabo USB/CP2102 e resistor de pull-up de 10 kOhm quando o módulo não tiver resistor integrado.</p></div>
       <div class="card"><h3>DHT11</h3><p><strong>DATA → GPIO 5</strong>, VCC → 3V3 e GND → GND. O código usa <code>#define DHTPIN 5</code>.</p></div>
       <div class="card"><h3>Bibliotecas</h3><p>DHT sensor library, Adafruit Unified Sensor e PubSubClient.</p></div>
     </div>
-    <p class="warning"><strong>Atenção:</strong> o README original menciona D4/GPIO4, mas o código usa GPIO5. A ligação precisa seguir o código ou o valor de <code>DHTPIN</code> deve ser alterado.</p>
+    <p class="warning"><strong>Atenção:</strong> use esta imagem como referência. A ligação está correta; troque somente o fio de alimentação que está em <code>3V3</code> para <code>VIN</code>. DATA continua no GPIO5, VCC no VIN e GND no GND.</p>
+    <img class="reference" src="https://cdn.shopify.com/s/files/1/0870/0021/9940/files/Screenshot_2026-01-25_211255.png?v=1770030814" alt="ESP32 ligado ao sensor DHT11 em uma protoboard">
+    <p class="caption">Imagem de referência: mantenha DATA e GND como estão e altere apenas a alimentação de 3V3 para VIN.</p>
   </section>
 
-  <section id="codigo">
+  <section class="slide" id="codigo">
     <div class="kicker">Slide 03 · Firmware</div><h2>Como o código funciona</h2>
     <ol class="steps">
       <li><div><strong><code>setup()</code></strong><br>Configura LED, serial, DHT11, broker MQTT e callback de comandos. A primeira publicação fica preparada para acontecer logo após a conexão.</div></li>
@@ -70,7 +85,7 @@
 }</code></pre>
   </section>
 
-  <section id="mqtt">
+  <section class="slide" id="mqtt">
     <div class="kicker">Slide 04 · Comunicação</div><h2>MQTT em quatro canais</h2>
     <div class="grid">
       <div class="card"><h3>Dados</h3><code>sensores/.../ambiente</code><p>Leituras periódicas a cada 30 segundos.</p></div>
@@ -87,7 +102,7 @@
 }</code></pre>
   </section>
 
-  <section id="gravar">
+  <section class="slide" id="gravar">
     <div class="kicker">Slide 05 · Upload</div><h2>Como gravar o ESP32</h2>
     <ol class="steps">
       <li><div>Instale o Arduino IDE, o suporte para placas ESP32 e as bibliotecas do projeto.</div></li>
@@ -102,7 +117,7 @@ arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 lhc-campinas-esp32-d
 arduino-cli monitor -p /dev/ttyUSB0 --config baudrate=115200</code></pre>
   </section>
 
-  <section id="pages">
+  <section class="slide" id="pages">
     <div class="kicker">Slide 06 · Publicação</div><h2>Como publicar no GitHub Pages</h2>
     <ol class="steps">
       <li><div>Faça commit e push deste projeto para o GitHub. A apresentação está em <code>docs/index.html</code>.</div></li>
@@ -115,7 +130,7 @@ arduino-cli monitor -p /dev/ttyUSB0 --config baudrate=115200</code></pre>
 git push origin main</code></pre>
   </section>
 
-  <section id="check">
+  <section class="slide" id="check">
     <div class="kicker">Slide 07 · Validação</div><h2>Checklist final</h2>
     <div class="grid">
       <div class="card"><h3>ESP32</h3><p>GPIO correto, alimentação 3V3, serial em 115200 e leitura válida do DHT11.</p></div>
@@ -124,7 +139,43 @@ git push origin main</code></pre>
       <div class="card"><h3>Segurança</h3><p><code>secrets.h</code> no <code>.gitignore</code>; se uma senha real foi exposta, troque-a no broker.</p></div>
     </div>
   </section>
+  <div class="controls" aria-label="Controles da apresentação">
+    <button id="previous" type="button" aria-label="Slide anterior">←</button>
+    <span class="counter" id="counter">1 / 7</span>
+    <button id="next" type="button" aria-label="Próximo slide">→</button>
+  </div>
   <footer>Material gerado para o projeto Sensor Externo LHC Campinas.</footer>
 </main>
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const counter = document.querySelector('#counter');
+  let current = 0;
+
+  function showSlide(index, direction = 1) {
+    const next = Math.max(0, Math.min(index, slides.length - 1));
+    slides[current].classList.remove('active');
+    slides[current].classList.toggle('previous', direction < 0);
+    current = next;
+    slides[current].classList.remove('previous');
+    slides[current].classList.add('active');
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    history.replaceState(null, '', `#${slides[current].id}`);
+  }
+
+  document.querySelector('#previous').addEventListener('click', () => showSlide(current - 1, -1));
+  document.querySelector('#next').addEventListener('click', () => showSlide(current + 1, 1));
+  document.querySelectorAll('[data-slide]').forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    showSlide(Number(link.dataset.slide), Number(link.dataset.slide) < current ? -1 : 1);
+  }));
+  document.addEventListener('keydown', event => {
+    if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key)) showSlide(current - 1, -1);
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(event.key)) showSlide(current + 1, 1);
+    if (event.key === 'Home') showSlide(0, -1);
+    if (event.key === 'End') showSlide(slides.length - 1, 1);
+  });
+  const initial = slides.findIndex(slide => `#${slide.id}` === location.hash);
+  if (initial >= 0) showSlide(initial);
+</script>
 </body>
 </html>

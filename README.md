@@ -45,7 +45,7 @@ Regiao: Sudeste
 Localizacao: Campinas
 ```
 
-O firmware publica a cada 30 segundos, possui watchdog, reconecta Wi-Fi/MQTT,
+O firmware publica a cada 30 segundos, reconecta Wi-Fi/MQTT,
 envia heartbeat online e aceita os comandos `read` e `restart`.
 
 Credenciais reais nunca devem ser commitadas neste repositorio publico.
@@ -53,7 +53,8 @@ Credenciais reais nunca devem ser commitadas neste repositorio publico.
 ## Tutorial em formato de slides
 
 O tutorial visual está em `docs/index.html` e pode ser publicado pelo GitHub
-Pages.
+Pages. Na apresentação, use `←` para voltar e `→` para avançar. As teclas
+`Home` e `End` vão para o primeiro e o último slide.
 
 ### Publicar no GitHub Pages
 
