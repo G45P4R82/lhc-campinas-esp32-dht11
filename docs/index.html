@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ESP32 + DHT11 | Aula em slides</title>
   <style>
-    :root { --bg:#07111f; --panel:#102038; --line:#2b4667; --text:#eff7ff; --muted:#abc1d9; --accent:#53e0b1; --blue:#79adff; --warn:#ffc36e; }
+    :root { --bg:#f4f7fb; --panel:#ffffff; --line:#cbd5e1; --text:#172033; --muted:#334155; --accent:#087f68; --blue:#1557a6; --warn:#9a5500; }
     * { box-sizing:border-box; }
-    body { margin:0; overflow:hidden; color:var(--text); background:radial-gradient(circle at 80% 0,#173e5f 0,var(--bg) 46%); font:16px/1.5 system-ui,-apple-system,sans-serif; }
+    body { margin:0; overflow:hidden; color:var(--text); background:radial-gradient(circle at 80% 0,#dcecff 0,var(--bg) 46%); font:16px/1.5 system-ui,-apple-system,sans-serif; }
     main { max-width:1100px; margin:auto; }
-    .slide { position:absolute; inset:0; min-height:100vh; overflow-y:auto; padding:10vh max(22px,calc((100vw - 1100px)/2)); opacity:0; transform:translateX(65px) scale(.98); pointer-events:none; transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.2,1); }
+    .slide { position:absolute; inset:0; min-height:100vh; overflow-y:auto; padding:7vh max(22px,calc((100vw - 1100px)/2)); opacity:0; transform:translateX(65px) scale(.98); pointer-events:none; transition:opacity .5s ease,transform .5s cubic-bezier(.2,.8,.2,1); }
     .slide.active { opacity:1; transform:none; pointer-events:auto; }
     .slide.previous { transform:translateX(-65px) scale(.98); }
     .slide > * { animation:rise .6s both; }
@@ -19,13 +19,13 @@
     h1 { max-width:850px; margin:12px 0 20px; font-size:clamp(3rem,8vw,7rem); line-height:.95; letter-spacing:-.07em; }
     h2 { margin:10px 0 22px; color:var(--accent); font-size:clamp(2.2rem,6vw,4.7rem); line-height:1; letter-spacing:-.06em; }
     h3 { margin:4px 0 8px; color:var(--blue); } p,li { color:var(--muted); }.lead { max-width:780px; font-size:1.25rem; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; }.card { padding:20px; border:1px solid var(--line); border-radius:17px; background:rgba(16,32,56,.84); }.card strong { color:var(--text); }
-    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; } code { color:var(--accent); } pre { overflow:auto; padding:17px; border:1px solid var(--line); border-radius:14px; background:#040a12; color:#dceaff; }
-    .flow { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px; margin:30px 0; }.node { padding:18px 20px; border:1px solid var(--accent); border-radius:15px; color:var(--text); background:rgba(83,224,177,.1); text-align:center; animation:pulse 2.5s infinite; }.arrow { color:var(--accent); font-size:2rem; } @keyframes pulse { 50% { box-shadow:0 0 24px rgba(83,224,177,.28); } }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; }.card { padding:20px; border:1px solid var(--line); border-radius:17px; background:rgba(255,255,255,.9); box-shadow:0 8px 24px rgba(35,55,80,.08); }.card strong { color:var(--text); }
+    code,pre { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; } code { color:#075e50; font-weight:650; } pre { overflow:auto; padding:17px; border:1px solid #334155; border-radius:14px; background:#172033; color:#f8fafc; }
+    .flow { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px; margin:30px 0; }.node { padding:18px 20px; border:1px solid var(--accent); border-radius:15px; color:var(--text); background:#d8f4ec; text-align:center; animation:pulse 2.5s infinite; }.arrow { color:var(--accent); font-size:2rem; } @keyframes pulse { 50% { box-shadow:0 0 24px rgba(8,127,104,.28); } }
     .steps { counter-reset:n; padding:0; list-style:none; }.steps li { counter-increment:n; display:grid; grid-template-columns:40px 1fr; gap:13px; margin:16px 0; }.steps li:before { content:counter(n); display:grid; place-items:center; width:32px; height:32px; border-radius:50%; color:#06151a; background:var(--accent); font-weight:800; }
     .warning { padding:14px 18px; border-left:4px solid var(--warn); background:rgba(255,195,110,.1); }.reference { display:block; width:min(100%,700px); max-height:45vh; object-fit:contain; border:1px solid var(--line); border-radius:17px; box-shadow:0 18px 60px #0005; }.caption { margin-top:7px; font-size:.9rem; }
-    .nav { position:fixed; z-index:5; top:12px; left:50%; display:flex; flex-wrap:wrap; gap:5px; max-width:calc(100% - 30px); padding:9px; border:1px solid var(--line); border-radius:14px; background:#07111fdc; transform:translateX(-50%); backdrop-filter:blur(12px); }.nav a { padding:5px 8px; border-radius:8px; color:var(--text); text-decoration:none; font-size:.88rem; }.nav a:hover { background:var(--line); }
-    .controls { position:fixed; z-index:5; right:20px; bottom:18px; display:flex; align-items:center; gap:9px; }.controls button { cursor:pointer; padding:9px 15px; border:1px solid var(--line); border-radius:11px; color:var(--text); background:var(--panel); font-size:1.1rem; }.controls button:hover { border-color:var(--accent); color:var(--accent); }.counter { color:var(--muted); font-variant-numeric:tabular-nums; }
+    .nav { display:none; }
+    .controls { position:fixed; z-index:5; right:20px; bottom:18px; display:flex; align-items:center; gap:9px; }.controls button { cursor:pointer; padding:9px 15px; border:1px solid #94a3b8; border-radius:11px; color:var(--text); background:var(--panel); font-size:1.1rem; box-shadow:0 4px 14px #33415522; }.controls button:hover { border-color:var(--accent); color:var(--accent); }.counter { color:var(--muted); font-variant-numeric:tabular-nums; font-weight:650; }
     footer { position:fixed; bottom:8px; left:20px; color:var(--muted); font-size:.85rem; }
   </style>
 </head>
@@ -54,7 +54,7 @@
 
 <section class="slide" id="mqtt2"><div class="kicker">MQTT básico · 02/04</div><h2>Cliente, broker e tópico</h2><div class="grid"><div class="card"><h3>Cliente</h3><p>Qualquer programa conectado ao MQTT. Aqui, o ESP32 e o computador são clientes.</p></div><div class="card"><h3>Broker</h3><p>Servidor central que recebe mensagens e entrega aos clientes interessados.</p></div><div class="card"><h3>Tópico</h3><p>Endereço textual que organiza as mensagens, como <code>sensores/.../ambiente</code>.</p></div></div><p>O cliente pode fazer <strong>publish</strong> para enviar ou <strong>subscribe</strong> para receber.</p></section>
 
-<section class="slide" id="mqtt3"><div class="kicker">MQTT básico · 03/04</div><h2>Como uma mensagem viaja?</h2><div class="flow"><div class="node">ESP32<br><small>publish</small></div><div class="arrow">→</div><div class="node">Broker MQTT<br><small>recebe e roteia</small></div><div class="arrow">→</div><div class="node">Aplicação<br><small>subscribe</small></div></div><ol class="steps"><li>O ESP32 conecta ao broker.</li><li>Publica uma mensagem em um tópico.</li><li>O broker identifica quem está inscrito naquele tópico.</li><li>O broker entrega a mensagem aos assinantes.</li></ol></section>
+<section class="slide" id="mqtt3"><div class="kicker">MQTT básico · 03/04</div><h2>Como uma mensagem viaja?</h2><img class="reference" src="https://www.hivemq.com/sb-assets/f/243938/640x212/074eebb5a6/publish_flow.gif/m/0x0/filters:quality(75):format(webp)" alt="Animação do fluxo de publicação MQTT"><p class="caption">O cliente publica no broker, e o broker entrega a mensagem aos clientes inscritos no tópico.</p><div class="flow"><div class="node">ESP32<br><small>publish</small></div><div class="arrow">→</div><div class="node">Broker MQTT<br><small>recebe e roteia</small></div><div class="arrow">→</div><div class="node">Aplicação<br><small>subscribe</small></div></div></section>
 
 <section class="slide" id="mqtt4"><div class="kicker">MQTT básico · 04/04</div><h2>Por que separar canais?</h2><p>Um tópico representa uma finalidade. Separar finalidades evita misturar leitura, comando e estado na mesma fila.</p><div class="grid"><div class="card"><h3>Organização</h3><p>Cada mensagem tem um lugar previsível.</p></div><div class="card"><h3>Permissões</h3><p>É possível permitir publicar ou ler apenas determinados tópicos.</p></div><div class="card"><h3>Consumo</h3><p>Uma aplicação pode ler dados sem receber comandos.</p></div><div class="card"><h3>Escala</h3><p>Outros sensores podem usar a mesma estrutura com IDs diferentes.</p></div></div></section>
 
